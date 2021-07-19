@@ -1,1 +1,1 @@
-export { BoidsCanvas } from "./boidsCanvas";
+export { BoidFlock } from "./boidFlock";

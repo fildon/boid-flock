@@ -1,5 +1,5 @@
 import * as React from "react";
 
-export function BoidsCanvas() {
+export function BoidFlock(): JSX.Element {
   return <span>hello world</span>;
 }

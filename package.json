@@ -4,6 +4,8 @@
   "description": "A React component to render boids as a background",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint src/**",
+    "test": "jest",
     "prebuild": "rm -rf dist",
     "build": "tsc && cp package.json README.md ./dist"
   },
@@ -28,9 +30,23 @@
   },
   "homepage": "https://github.com/fildon/BoidsCanvas#readme",
   "devDependencies": {
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^12.0.0",
+    "@types/jest": "^26.0.24",
     "@types/react": "^17.0.14",
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
+    "eslint": "^7.31.0",
+    "eslint-plugin-jest": "^24.3.6",
+    "eslint-plugin-jest-dom": "^3.9.0",
+    "eslint-plugin-react": "^7.24.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "eslint-plugin-testing-library": "^4.9.1",
+    "jest": "^27.0.6",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "ts-jest": "^27.0.3",
+    "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
   }
 }
