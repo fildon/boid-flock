@@ -5,6 +5,7 @@ const config: Config.InitialOptions = {
   testEnvironment: "jsdom",
   modulePathIgnorePatterns: ["<rootDir>/dist"],
   setupFilesAfterEnv: ["<rootDir>/jest-setup.ts"],
+  clearMocks: true,
 };
 
 export default config;
