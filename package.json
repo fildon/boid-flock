@@ -1,0 +1,36 @@
+{
+  "name": "boid-flock",
+  "version": "1.0.0",
+  "description": "A React component to render boids as a background",
+  "main": "index.js",
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "tsc && cp package.json README.md ./dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fildon/BoidsCanvas.git"
+  },
+  "keywords": [
+    "TypeScript",
+    "React",
+    "ALife",
+    "HTMLCanvas"
+  ],
+  "author": {
+    "name": "Rupert Foggo McKay",
+    "email": "maxfmckay@gmail.com",
+    "url": "https://fildon.me/"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fildon/BoidsCanvas/issues"
+  },
+  "homepage": "https://github.com/fildon/BoidsCanvas#readme",
+  "devDependencies": {
+    "@types/react": "^17.0.14",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "typescript": "^4.3.5"
+  }
+}
