@@ -4,8 +4,21 @@ A React component to render a boids simulation anywhere
 
 ## Installation
 
-TODO
+```shell
+npm add 'boid-flock'
+yarn add 'boid-flock'
+```
 
 ## Usage
 
-TODO
+```ts
+import { BoidFlock } from "boid-flock";
+
+export function YourComponent() {
+  return (
+    <BoidFlock>
+      <span>You can render whatever you like in here</span>
+    </BoidFlock>
+  );
+}
+```

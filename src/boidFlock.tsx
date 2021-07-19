@@ -1,15 +1,23 @@
 import * as React from "react";
+import { startSimulation } from "./engine/simulation";
 
 export interface BoidFlockProps {
-  /**
-   * Simple message string to be rendered
-   */
-  message: string;
+  children?: React.ReactNode;
 }
 
-/**
- * Renders a lovely message
- */
-export function BoidFlock({ message }: BoidFlockProps): JSX.Element {
-  return <span>{message}</span>;
+export function BoidFlock({ children }: BoidFlockProps): JSX.Element {
+  const containerRef = React.createRef<HTMLDivElement>();
+  const canvasRef = React.createRef<HTMLCanvasElement>();
+
+  React.useEffect(() => {
+    if (!canvasRef.current || !containerRef.current) return;
+    startSimulation(canvasRef.current, containerRef.current);
+  }, [canvasRef, containerRef]);
+
+  return (
+    <div ref={containerRef} style={{ backgroundRepeat: "no-repeat" }}>
+      <canvas ref={canvasRef} style={{ display: "none" }} />
+      {children}
+    </div>
+  );
 }

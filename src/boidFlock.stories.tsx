@@ -8,7 +8,10 @@ export default {
   component: BoidFlock,
 } as Meta;
 
-const Template: Story<BoidFlockProps> = (args) => <BoidFlock {...args} />;
+const Template: Story<BoidFlockProps> = () => (
+  <BoidFlock>
+    <div style={{ height: "100px" }}>hello storybook!</div>
+  </BoidFlock>
+);
 
 export const Default = Template.bind({});
-Default.args = { message: "hello from storybook" };
