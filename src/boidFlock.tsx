@@ -1,5 +1,9 @@
 import * as React from "react";
 
-export function BoidFlock(): JSX.Element {
-  return <span>hello world</span>;
+export interface BoidFlockProps {
+  message: string;
+}
+
+export function BoidFlock({ message }: BoidFlockProps): JSX.Element {
+  return <span>{message}</span>;
 }

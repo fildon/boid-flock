@@ -7,7 +7,8 @@
     "lint": "eslint src/**",
     "test": "jest",
     "prebuild": "rm -rf dist",
-    "build": "tsc && cp package.json README.md ./dist"
+    "build": "tsc && cp package.json README.md ./dist",
+    "storybook": "start-storybook -p 6006"
   },
   "repository": {
     "type": "git",
@@ -30,12 +31,19 @@
   },
   "homepage": "https://github.com/fildon/BoidsCanvas#readme",
   "devDependencies": {
+    "@babel/core": "^7.14.6",
+    "@storybook/addon-actions": "^6.3.4",
+    "@storybook/addon-essentials": "^6.3.4",
+    "@storybook/addon-links": "^6.3.4",
+    "@storybook/react": "^6.3.4",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.0.0",
     "@types/jest": "^26.0.24",
     "@types/react": "^17.0.14",
+    "@types/react-dom": "^17.0.9",
     "@typescript-eslint/eslint-plugin": "^4.28.3",
     "@typescript-eslint/parser": "^4.28.3",
+    "babel-loader": "^8.2.2",
     "eslint": "^7.31.0",
     "eslint-plugin-jest": "^24.3.6",
     "eslint-plugin-jest-dom": "^3.9.0",
