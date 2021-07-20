@@ -5,8 +5,7 @@ A React component to render a boids simulation anywhere
 ## Installation
 
 ```shell
-npm add 'boid-flock'
-yarn add 'boid-flock'
+npm install 'boid-flock'
 ```
 
 ## Usage

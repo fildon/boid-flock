@@ -1,5 +1,5 @@
 import { Boid, makeBoid, updateBoid } from "./boid";
-import { Vector } from "./vector";
+import { Vector, distanceBetween, smallestTurn } from "./vector";
 
 const boidCount = 3;
 
@@ -45,7 +45,40 @@ export function advanceSimulation({
 }
 
 function updateBoids(boids: Boid[], worldSize: Vector): Boid[] {
-  return boids.map((boid) => updateBoid(boid, worldSize));
+  return boids.map((boid) => {
+    const nearestBoid = getNearestBoid(boid.position, boids, worldSize);
+    const targetHeading = nearestBoid?.heading ?? boid.heading;
+    const idealTurn = smallestTurn(boid.heading, targetHeading);
+    const limitedTurn = Math.max(Math.min(idealTurn, 0.2), -0.2);
+    const turningFuzz = 0.05 * (2 * Math.random() - 1);
+    const newHeading =
+      (((boid.heading + limitedTurn + turningFuzz) % (2 * Math.PI)) +
+        2 * Math.PI) %
+      (2 * Math.PI);
+    return updateBoid(boid, newHeading, worldSize);
+  });
+}
+
+function getNearestBoid(
+  position: Vector,
+  boids: Boid[],
+  worldSize: Vector
+): Boid | null {
+  return boids.reduce<[number, Boid | null]>(
+    (nearest, currentBoid) => {
+      const currentDistance = distanceBetween(
+        position,
+        currentBoid.position,
+        worldSize
+      );
+      if (currentDistance === 0) return nearest;
+      const [nearestDistance] = nearest;
+      return currentDistance < nearestDistance
+        ? [currentDistance, currentBoid]
+        : nearest;
+    },
+    [Infinity, null]
+  )[1];
 }
 
 function getWorldSize(container: Element): Vector {
