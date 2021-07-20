@@ -1,37 +1,47 @@
 import { Boid, makeBoid, updateBoid } from "./boid";
 import { Vector } from "./vector";
 
-const targetFrameRate = 30;
-const boidCount = 10;
+const boidCount = 3;
 
-export function startSimulation(
+export interface Simulation {
+  boids: Boid[];
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
+  container: HTMLDivElement;
+}
+
+export function createSimulation(
   canvas: HTMLCanvasElement,
   container: HTMLDivElement
-): void {
+): Simulation | null {
   const context = canvas.getContext("2d");
   if (!context) {
     console.error(
       "BoidFlock failed to getContext from provided canvas element. Canvas element was:",
       canvas
     );
-    return;
+    return null;
   }
-  tick(createBoids(getWorldSize(container)), canvas, context, container);
+  return {
+    boids: createBoids(getWorldSize(container)),
+    canvas,
+    context,
+    container,
+  };
 }
 
-function tick(
-  boids: Boid[],
-  canvas: HTMLCanvasElement,
-  context: CanvasRenderingContext2D,
-  container: HTMLDivElement
-): void {
-  const newBoids = updateBoids(boids, getWorldSize(container));
-
+export function advanceSimulation({
+  boids,
+  canvas,
+  context,
+  container,
+}: Simulation): Simulation {
+  const { x, y } = getWorldSize(container);
+  canvas.width = x;
+  canvas.height = y;
+  const newBoids = updateBoids(boids, { x, y });
   renderSimulation(newBoids, canvas, context, container);
-  setTimeout(
-    () => tick(newBoids, canvas, context, container),
-    1000 / targetFrameRate
-  );
+  return { boids: newBoids, canvas, context, container };
 }
 
 function updateBoids(boids: Boid[], worldSize: Vector): Boid[] {
@@ -59,9 +69,7 @@ function renderSimulation(
 ): void {
   context.clearRect(0, 0, canvas.width, canvas.height);
   boids.forEach((boid) => paintBoidToCanvas(context, boid));
-
-  const canvasDataUrl = canvas.toDataURL();
-  container.style.background = `url(${canvasDataUrl})`;
+  container.style.background = `url(${canvas.toDataURL()})`;
 }
 
 function paintBoidToCanvas(

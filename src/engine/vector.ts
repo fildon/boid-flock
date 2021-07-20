@@ -20,5 +20,5 @@ export function addPolar(
 }
 
 function normalize({ x, y }: Vector, { x: maxX, y: maxY }: Vector) {
-  return { x: x % maxX, y: y % maxY };
+  return { x: ((x % maxX) + maxX) % maxX, y: ((y % maxY) + maxY) % maxY };
 }
