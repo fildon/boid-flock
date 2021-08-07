@@ -12,7 +12,7 @@ export function createRandomVector({ x: maxX, y: maxY }: Vector): Vector {
   return { x: Math.random() * maxX, y: Math.random() * maxY };
 }
 
-function polarToVector({ heading, length }: Polar): Vector {
+export function polarToVector({ heading, length }: Polar): Vector {
   return { x: length * Math.cos(heading), y: length * Math.sin(heading) };
 }
 

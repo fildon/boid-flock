@@ -1,5 +1,5 @@
 import { Boid, makeBoid, updateBoid, boidBehaviours } from "./boid";
-import { Vector, scale, toPolar, add } from "./vector";
+import { Vector, scale, toPolar, add, polarToVector } from "./vector";
 import { renderSimulation } from "./renderer";
 
 interface SimulationOptions {
@@ -15,7 +15,7 @@ export interface Simulation {
 export function createSimulation(
   canvas: HTMLCanvasElement,
   container: HTMLDivElement,
-  { boidCount = 3 }: SimulationOptions = {}
+  { boidCount = 10 }: SimulationOptions = {}
 ): Simulation | undefined {
   const context = canvas.getContext("2d");
   if (!context) {
@@ -67,16 +67,10 @@ function updateBoids(boids: Boid[], worldSize: Vector): Boid[] {
       { vector: { x: 0, y: 0 }, weight: 0 }
     );
 
-    if (totalVector.weight === 0) {
-      // TODO do something more interesting when no priorities available.
-      /**
-       * If we got no priorities, then we continue on current course
-       */
-      return updateBoid(boid, boid.course, worldSize);
-    }
-
     const idealTargetVector = scale(
-      scale(totalVector.vector, 1 / totalVector.weight),
+      totalVector.weight === 0
+        ? polarToVector(boid.course) // No priorities -> use the boid's current course
+        : scale(totalVector.vector, 1 / totalVector.weight),
       0.95 // global deceleration desire
     );
 
