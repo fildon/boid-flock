@@ -1,32 +1,35 @@
-import { Vector, createRandomVector, addPolar } from "./vector";
+import {
+  Vector,
+  Polar,
+  createRandomVector,
+  addPolar,
+  normalizeOnTorus,
+} from "./vector";
 
 export interface Boid {
   position: Vector;
-  heading: number;
-  speed: number;
+  course: Polar;
   history: Vector[];
 }
 
 export function makeBoid(worldSize: Vector): Boid {
   return {
     position: createRandomVector(worldSize),
-    heading: 2 * Math.PI * Math.random(),
-    speed: 6,
+    course: { heading: 2 * Math.PI * Math.random(), length: 6 },
     history: [],
   };
 }
 
 export function updateBoid(
-  { position, heading, speed, history }: Boid,
-  newHeading: number,
+  { position, course, history }: Boid,
+  newCourse: Polar,
   worldSize: Vector
 ): Boid {
-  const newPosition = addPolar(position, heading, speed, worldSize);
+  const newPosition = normalizeOnTorus(addPolar(position, course), worldSize);
   const newHistory = [position, ...history].slice(0, 5);
   return {
     position: newPosition,
-    heading: newHeading,
-    speed, // TODO
+    course: newCourse,
     history: newHistory,
   };
 }

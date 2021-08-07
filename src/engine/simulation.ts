@@ -1,8 +1,87 @@
 import { Boid, makeBoid, updateBoid } from "./boid";
-import { Vector, distanceBetween, smallestTurn } from "./vector";
+import {
+  Vector,
+  scale,
+  toPolar,
+  add,
+  distanceBetween,
+  addPolar,
+} from "./vector";
 
-const boidCount = 3;
+const ALIGNMENT_RADIUS = 40;
+const ALIGNMENT_WEIGHT = 15;
+const SEPARATION_RADIUS = 15;
+const SEPARATION_WEIGHT = 30;
+const boidBehaviours: ((
+  selfBoid: Boid,
+  otherBoids: Boid[],
+  worldSize: Vector
+) => { vector: Vector; weight: number })[] = [
+  separationBehaviour,
+  alignmentBehaviour,
+];
 
+function separationBehaviour(
+  selfBoid: Boid,
+  otherBoids: Boid[],
+  worldSize: Vector
+): { vector: Vector; weight: number } {
+  const boidsToAvoid = otherBoids.filter(
+    (other) =>
+      distanceBetween(other.position, selfBoid.position, worldSize) <
+      SEPARATION_RADIUS
+  );
+
+  if (boidsToAvoid.length === 0) return { vector: { x: 0, y: 0 }, weight: 0 };
+
+  const averageRepulsionVector = scale(
+    boidsToAvoid
+      .map(({ position: { x: otherX, y: otherY } }) => ({
+        x: otherX - selfBoid.position.x,
+        y: otherY - selfBoid.position.y,
+      }))
+      .reduce((totalVector, currentVector) => add(totalVector, currentVector), {
+        x: 0,
+        y: 0,
+      }),
+    1 / boidsToAvoid.length
+  );
+  return {
+    vector: averageRepulsionVector,
+    weight: SEPARATION_WEIGHT,
+  };
+}
+
+function alignmentBehaviour(
+  selfBoid: Boid,
+  otherBoids: Boid[],
+  worldSize: Vector
+): { vector: Vector; weight: number } {
+  const boidsToAlignTo = otherBoids.filter(
+    (other) =>
+      distanceBetween(other.position, selfBoid.position, worldSize) <
+      ALIGNMENT_RADIUS
+  );
+
+  if (boidsToAlignTo.length === 0)
+    return {
+      vector: { x: 0, y: 0 },
+      weight: 0,
+    };
+
+  const averageAlignmentVector = scale(
+    boidsToAlignTo
+      .map((other) => other.course)
+      .reduce((acc, curr) => addPolar(acc, curr), { x: 0, y: 0 }),
+    1 / boidsToAlignTo.length
+  );
+
+  return { vector: averageAlignmentVector, weight: ALIGNMENT_WEIGHT };
+}
+
+interface SimulationOptions {
+  boidCount?: number;
+}
 export interface Simulation {
   boids: Boid[];
   canvas: HTMLCanvasElement;
@@ -12,18 +91,19 @@ export interface Simulation {
 
 export function createSimulation(
   canvas: HTMLCanvasElement,
-  container: HTMLDivElement
-): Simulation | null {
+  container: HTMLDivElement,
+  { boidCount = 3 }: SimulationOptions = {}
+): Simulation | undefined {
   const context = canvas.getContext("2d");
   if (!context) {
     console.error(
       "BoidFlock failed to getContext from provided canvas element. Canvas element was:",
       canvas
     );
-    return null;
+    return undefined;
   }
   return {
-    boids: createBoids(getWorldSize(container)),
+    boids: createBoids(getWorldSize(container), boidCount),
     canvas,
     context,
     container,
@@ -46,39 +126,55 @@ export function advanceSimulation({
 
 function updateBoids(boids: Boid[], worldSize: Vector): Boid[] {
   return boids.map((boid) => {
-    const nearestBoid = getNearestBoid(boid.position, boids, worldSize);
-    const targetHeading = nearestBoid?.heading ?? boid.heading;
-    const idealTurn = smallestTurn(boid.heading, targetHeading);
-    const limitedTurn = Math.max(Math.min(idealTurn, 0.2), -0.2);
-    const turningFuzz = 0.05 * (2 * Math.random() - 1);
-    const newHeading =
-      (((boid.heading + limitedTurn + turningFuzz) % (2 * Math.PI)) +
-        2 * Math.PI) %
-      (2 * Math.PI);
-    return updateBoid(boid, newHeading, worldSize);
-  });
-}
+    const otherBoids = boids.filter(
+      // We get 'otherBoids' as the set of boids not at our position.
+      ({ position: { x, y } }) => boid.position.x !== x || boid.position.y !== y
+    );
+    const priorities = boidBehaviours.map((behaviour) =>
+      behaviour(boid, otherBoids, worldSize)
+    );
 
-function getNearestBoid(
-  position: Vector,
-  boids: Boid[],
-  worldSize: Vector
-): Boid | null {
-  return boids.reduce<[number, Boid | null]>(
-    (nearest, currentBoid) => {
-      const currentDistance = distanceBetween(
-        position,
-        currentBoid.position,
-        worldSize
-      );
-      if (currentDistance === 0) return nearest;
-      const [nearestDistance] = nearest;
-      return currentDistance < nearestDistance
-        ? [currentDistance, currentBoid]
-        : nearest;
-    },
-    [Infinity, null]
-  )[1];
+    const totalVector = priorities.reduce(
+      (acc, curr) => {
+        return {
+          vector: add(acc.vector, scale(curr.vector, curr.weight)),
+          weight: acc.weight + curr.weight,
+        };
+      },
+      { vector: { x: 0, y: 0 }, weight: 0 }
+    );
+
+    if (totalVector.weight === 0) {
+      // TODO do something more interesting when no priorities available.
+      /**
+       * If we got no priorities, then we continue on current course
+       */
+      return updateBoid(boid, boid.course, worldSize);
+    }
+
+    const idealTargetVector = scale(
+      scale(totalVector.vector, 1 / totalVector.weight),
+      0.95 // global deceleration desire
+    );
+
+    const { length, heading } = toPolar(idealTargetVector);
+    const headingFuzz = (2 * Math.random() - 1) * 0.05; // -0.05 to 0.05
+    const maximumSpeed = Math.min(boid.course.length + 0.2, 6);
+    const minimumSpeed = Math.max(boid.course.length - 0.2, 3);
+    const clampedSpeed = Math.max(Math.min(length, maximumSpeed), minimumSpeed);
+    const clampedHeading =
+      Math.max(
+        Math.min(heading + headingFuzz, boid.course.heading + 0.2),
+        boid.course.heading - 0.2
+      ) %
+      (2 * Math.PI);
+
+    return updateBoid(
+      boid,
+      { length: clampedSpeed, heading: clampedHeading },
+      worldSize
+    );
+  });
 }
 
 function getWorldSize(container: Element): Vector {
@@ -86,7 +182,7 @@ function getWorldSize(container: Element): Vector {
   return { x: width, y: height };
 }
 
-function createBoids(worldSize: Vector): Boid[] {
+function createBoids(worldSize: Vector, boidCount: number): Boid[] {
   const boids = [];
   for (let i = 0; i < boidCount; i++) {
     boids.push(makeBoid(worldSize));
@@ -130,7 +226,7 @@ function paintBoidSegments(
 
 function paintBeak(
   context: CanvasRenderingContext2D,
-  { position: { x, y }, heading }: Boid
+  { position: { x, y }, course: { heading } }: Boid
 ): void {
   context.beginPath();
   context.arc(

@@ -8,17 +8,18 @@ export default {
   component: BoidFlock,
 } as Meta;
 
-const Template: Story<BoidFlockProps> = ({ children }) => (
-  <BoidFlock>{children}</BoidFlock>
+const Template: Story<BoidFlockProps> = ({ children, boidCount }) => (
+  <BoidFlock boidCount={boidCount}>{children}</BoidFlock>
 );
 
 export const DivWithAString = Template.bind({});
 DivWithAString.args = {
   children: (
-    <div style={{ height: 200, border: "1px solid black" }}>
+    <div style={{ height: 200, width: 500, border: "1px solid black" }}>
       hello storybook!
     </div>
   ),
+  boidCount: 10,
 };
 
 export const TextArea = Template.bind({});
