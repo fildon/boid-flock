@@ -2,6 +2,8 @@
 
 A React component to render a boids simulation anywhere
 
+![Demo gif](https://raw.githubusercontent.com/fildon/boid-flock/main/static/boid-flock.gif)
+
 ## Installation
 
 ```shell
