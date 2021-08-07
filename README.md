@@ -1,4 +1,4 @@
-# Boids Canvas
+# Boid Flock
 
 A React component to render a boids simulation anywhere
 
